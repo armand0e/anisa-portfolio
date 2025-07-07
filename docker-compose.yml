@@ -1,0 +1,31 @@
+services:
+  anisa-website:
+    container_name: anisa-website
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      - anisa-cloudflared
+    ports:
+      - "3100:3000"
+    environment:
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: anisa-cloudflared
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token ${TOKEN}
+    environment:
+      - TZ=US/Eastern
+      - TOKEN=${TOKEN}
+    networks:
+      - anisa-cloudflared
+    depends_on:
+      - anisa-website
+
+networks:
+  anisa-cloudflared:
+    name: anisa-cloudflared
+    driver: bridge
